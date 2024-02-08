@@ -1,9 +1,9 @@
 import gql from "graphql-tag";
 
 // Query to fetch user data and saved book data for 'SavedBooks.js'
-export const FETCH_USER_DATA = gql`
+export const GET_ME = gql`
   {
-    getUserData {
+    me {
       _id
       username
       email
