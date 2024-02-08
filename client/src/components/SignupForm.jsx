@@ -23,32 +23,31 @@ const SignupForm = () => {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-
+  
     // check if form has everything (as per react-bootstrap docs)
     const form = event.currentTarget;
     if (form.checkValidity() === false) {
       event.preventDefault();
       event.stopPropagation();
     }
-
-    //changed the code here
-      try {
-        const { data } = await addUser({
-          variables: { ...userFormData },
-        });
-        Auth.login(data.addUser.token);
-      } catch (err) {
-        console.error(error);
-        setShowAlert(true);
-      }
-
+  
+    try {
+      const { data } = await addUser({
+        variables: { ...userFormData },
+      });
+      Auth.login(data.addUser.token);
+    } catch (err) {
+      console.error(err); // Corrected from console.error(error)
+      setShowAlert(true);
+    }
+  
     setUserFormData({
       username: '',
       email: '',
       password: '',
     });
   };
-
+  
   return (
     <>
       {/* This is needed for the validation functionality above */}
