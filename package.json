@@ -5,7 +5,7 @@
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "develop": "npm run watch:server & npm start --prefix client",
+    "develop": "concurrently \"cd server && npm run watch\" \"cd client && npm run dev\"",
     "install": "cd server && npm i && cd ../client && npm i",
     "build": "cd client && npm run build",
     "render-build": "npm install && npm run build"
@@ -17,12 +17,6 @@
     "concurrently": "^5.3.0"
   },
   "dependencies": {
-    "@apollo/react-hooks": "^4.0.0",
-    "apollo-boost": "^0.4.9",
-    "apollo-server-express": "^3.13.0",
-    "bcrypt": "^5.0.1",
-    "concurrently": "^5.3.0",
-    "mongoose": "^8.1.1",
-    "react-bootstrap": "^2.10.0"
+
   }
 }
