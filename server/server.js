@@ -1,47 +1,62 @@
-// imports
-const express = require("express");
-const path = require("path");
-const { ApolloServer } = require("apollo-server-express");
-const { authMiddleware } = require("./utils/auth");
-const db = require("./config/connection");
-const { typeDefs, resolvers } = require("./schemas");
+const express = require('express');
+const { ApolloServer } = require('@apollo/server');
 
-const app = express();
+// we need to npm i cors
+const cors = require('cors');
+
+const { expressMiddleware } = require('@apollo/server/express4');
+const { authMiddleware } = require('./utils/auth');
+const { typeDefs, resolvers } = require('./schemas');
+const db = require('./config/connection');
+
 const PORT = process.env.PORT || 3001;
-
-// Apollo server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: authMiddleware,
 });
 
-// Apply middleware inside an async function
-async function startServer() {
-  // Start Apollo Server
+const app = express();
+
+// to avoid referrer issues we use this middleware
+app.use((req, res, next) => {
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  next();
+});
+
+// setting options for cors origins 
+const corsOptions = {
+  origin: 'https://book-library-fe.netlify.app', // Adjust this to your client's URL on netlify with no / at the end
+  credentials: false, // we aren't tossing cookies around
+  methods: ['GET', 'POST', 'OPTIONS'], // Allowed HTTP methods 
+  allowedHeaders: ['Content-Type', 'Authorization'], // this allows auth headers to get passed from client to server this is the `authorization bearer token` stuff
+};
+
+
+app.use(cors(corsOptions));
+
+// Create a new instance of an Apollo server with the GraphQL schema
+const startApolloServer = async () => {
   await server.start();
+  
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
+  
 
-  // Apply Apollo Server middleware to Express
-  server.applyMiddleware({ app });
-}
+  // add cors false to this middleware
+  app.use('/graphql', expressMiddleware(server, {
+    context: authMiddleware,
+    cors: false 
+  }));
 
-startServer();
+  // delete the production stuff AND delete your .npmrc
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// if we're in production, serve client/build as static assets
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-}
-
-/* app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
-}); */
-
-db.once("open", () => {
-  app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
-    console.log(`Use GraphQL at http://localhost:${PORT}${server.graphqlPath}`);
+  db.once('open', () => {
+    app.listen(PORT, () => {
+      console.log(`API server running on port ${PORT}!`);
+      console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
+    });
   });
-});
+};
+
+// Call the async function to start the server
+startApolloServer();

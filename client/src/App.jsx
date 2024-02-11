@@ -10,7 +10,7 @@ import { setContext } from '@apollo/client/link/context';
 import Navbar from './components/Navbar';
 
 const httpLink = createHttpLink({
-  uri: '/graphql',
+  uri: 'https://book-library-be-v140.onrender.com/graphql', // grab your render back end deployment with /graphql at the end of it
 });
 
 // Construct request middleware that will attach the JWT token to every request as an `authorization` header
